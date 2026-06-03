@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>A–Z Adventure World 🌈🔤🚀</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Fredoka', 'Prompt', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            overscroll-behavior: none;
+        }
+        /* Custom Smooth Fluid Animations & 3D Buttons */
+        .btn-3d {
+            transition: all 0.1s ease;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.15);
+        }
+        .btn-3d:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.15);
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(1deg); }
+        }
+        .animate-pulse-glow {
+            animation: pulseGlow 2s infinite;
+        }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 5px rgba(255, 235, 59, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(255, 235, 59, 0.9); }
+        }
+        /* Haptic Shake Effect */
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+        /* Glassmorphism Classes */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+        }
+        /* Memory Flip Card Classes */
+        .card-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .card-flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+        /* Print Stylesheet for Certificate */
+        @media print {
+            body * { visibility: hidden; }
+            #certPrintArea, #certPrintArea * { visibility: visible; }
+            #certPrintArea {
+                position: absolute;
+                left: 0; top: 0; width: 100%;
+                background: white !important;
+                border: 15px double #4F46E5 !important;
+                padding: 40px !important;
+                color: #000 !important;
+            }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-tr from-sky-200 via-pink-100 to-yellow-100 min-h-screen text-slate-800 flex flex-col items-center justify-between overflow-x-hidden relative p-2 sm:p-4">
+
+    <canvas id="confettiCanvas" class="absolute inset-0 pointer-events-none z-50 w-full h-full hidden"></canvas>
+
+    <header class="w-full max-w-4xl flex items-center justify-between p-3 glass-panel rounded-2xl shadow-xl mb-3 z-40">
+        <div class="flex items-center gap-3">
+            <span id="headerAvatar" class="text-3xl sm:text-4xl filter drop-shadow">👦</span>
+            <div>
+                <h2 id="headerPlayerName" class="font-bold text-sm sm:text-base text-slate-700 leading-tight">ผู้กล้าตัวน้อย</h2>
+                <span class="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full font-semibold">
+                    <i class="fa-solid fa-graduation-cap mr-1"></i><span id="headerPlayerClass">ป.1/1</span>
+                </span>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 sm:gap-4">
+            <div class="flex items-center bg-amber-100 border-2 border-amber-300 rounded-full px-3 py-1 shadow-sm">
+                <i class="fa-solid fa-star text-amber-500 mr-1 sm:mr-2 text-sm sm:text-base"></i>
+                <span id="playerStars" class="font-bold text-sm sm:text-base text-amber-800">0</span>
+            </div>
+            <div class="flex items-center bg-yellow-100 border-2 border-yellow-300 rounded-full px-3 py-1 shadow-sm">
+                <i class="fa-solid fa-coins text-yellow-500 mr-1 sm:mr-2 text-sm sm:text-base"></i>
+                <span id="playerCoins" class="font-bold text-sm sm:text-base text-yellow-800">0</span>
+            </div>
+            <button onclick="openTeacherAdmin()" class="w-9 h-9 sm:w-11 sm:h-11 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center justify-center shadow-md btn-3d" title="แผงควบคุมครู">
+                <i class="fa-solid fa-user-tie text-sm sm:text-base"></i>
+            </button>
+        </div>
+    </header>
+
+    <main id="gameMainContainer" class="w-full max-w-4xl flex-1 flex flex-col justify-center items-center z-30 mb-2 relative min-h-[500px]">
+        
+        <section id="screenLogin" class="w-full max-w-md glass-panel p-6 rounded-3xl shadow-2xl flex flex-col gap-5 text-center animate-float">
+            <div>
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-pink-500 to-amber-500 tracking-tight">A–Z Adventure World</h1>
+                <p class="text-sm text-slate-500 mt-1 font-semibold">🌈🔤 ผจญภัยโลกตัวอักษรอังกฤษสุดหรรษา 🚀</p>
+            </div>
+            <div class="space-y-3 text-left">
+                <div>
+                    <label class="block text-xs font-bold text-indigo-900 mb-1">✍️ ชื่อผู้กล้าตัวน้อย :</label>
+                    <input id="inputName" type="text" placeholder="พิมพ์ชื่อเล่นของคุณที่นี่..." class="w-full p-3 rounded-xl border-2 border-indigo-200 bg-white/80 focus:outline-none focus:border-indigo-500 text-base font-semibold">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold text-indigo-900 mb-1">🏫 ระดับชั้น :</label>
+                        <input id="inputClass" type="text" placeholder="เช่น ป.1/2" class="w-full p-3 rounded-xl border-2 border-indigo-200 bg-white/80 focus:outline-none focus:border-indigo-500 text-sm font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-indigo-900 mb-1">🔢 เลขที่ :</label>
+                        <input id="inputNo" type="number" placeholder="เลขที่" class="w-full p-3 rounded-xl border-2 border-indigo-200 bg-white/80 focus:outline-none focus:border-indigo-500 text-sm font-semibold">
+                    </div>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-left text-indigo-900 mb-2">👦 เลือกฮีโร่ของคุณ :</label>
+                <div class="grid grid-cols-4 gap-2">
+                    <button type="button" onclick="selectAvatar('👦', this)" class="avatar-opt p-3 bg-indigo-50 border-4 border-indigo-500 rounded-2xl text-2xl sm:text-3xl transition-all">👦</button>
+                    <button type="button" onclick="selectAvatar('👧', this)" class="avatar-opt p-3 bg-white/60 border-4 border-transparent rounded-2xl text-2xl sm:text-3xl transition-all">👧</button>
+                    <button type="button" onclick="selectAvatar('🐱', this)" class="avatar-opt p-3 bg-white/60 border-4 border-transparent rounded-2xl text-2xl sm:text-3xl transition-all">🐱</button>
+                    <button type="button" onclick="selectAvatar('🐰', this)" class="avatar-opt p-3 bg-white/60 border-4 border-transparent rounded-2xl text-2xl sm:text-3xl transition-all">🐰</button>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-left text-indigo-900 mb-2">🦕 เลือกสัตว์เลี้ยงคู่หูผู้ช่วย :</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button type="button" onclick="selectPet('🦕 ไดโน่', this)" class="pet-opt p-2 bg-indigo-50 border-4 border-indigo-500 rounded-2xl text-sm font-bold transition-all flex flex-col items-center"><span>🦕</span> ไดโน่</button>
+                    <button type="button" onclick="selectPet('🦄 ยูนิ', this)" class="pet-opt p-2 bg-white/60 border-4 border-transparent rounded-2xl text-sm font-bold transition-all flex flex-col items-center"><span>🦄</span> ยูนิ</button>
+                    <button type="button" onclick="selectPet('🐉 มังกร', this)" class="pet-opt p-2 bg-white/60 border-4 border-transparent rounded-2xl text-sm font-bold transition-all flex flex-col items-center"><span>🐉</span> มังกร</button>
+                </div>
+            </div>
+            <button onclick="startGameSession()" class="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-lg rounded-2xl border-b-4 border-emerald-700 shadow-lg btn-3d">
+                <i class="fa-solid fa-circle-play mr-2"></i>เริ่มผจญภัยเลย!
+            </button>
+        </section>
+
+        <section id="screenMap" class="w-full hidden flex flex-col items-center gap-4">
+            <div class="text-center">
+                <h2 class="text-2xl sm:text-3xl font-black text-indigo-900 drop-shadow">🗺️ แผนที่โลกแฟนตาซี</h2>
+                <p class="text-xs sm:text-sm text-slate-600 font-medium">สะสมดาวแห่งความดีเด่นเพื่อปลดล็อกโลกต่อไปนะ!</p>
+            </div>
+            <div class="w-full max-w-md bg-amber-50/90 border-2 border-amber-300 rounded-2xl p-3 flex items-center justify-between shadow-md">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl animate-bounce">🎁</span>
+                    <div class="text-left">
+                        <h4 class="font-bold text-xs sm:text-sm text-amber-900">ของขวัญนำโชคประจำวัน</h4>
+                        <p id="dailyRewardStatus" class="text-[11px] text-amber-700">ลุ้นรับเหรียญทองนำโชคฟรีทุกวัน!</p>
+                    </div>
+                </div>
+                <button id="btnDailyReward" onclick="claimDailyReward()" class="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-xs rounded-xl shadow btn-3d">รับของรางวัล</button>
+            </div>
+            <div id="worldsContainer" class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-2">
+                </div>
+            <button onclick="checkAndShowCertificate()" id="btnCertTrigger" class="mt-4 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold rounded-2xl shadow-xl border-b-4 border-indigo-700 flex items-center gap-2 text-sm sm:text-base hidden animate-pulse-glow">
+                <i class="fa-solid fa-award text-lg"></i> รับใบประกาศนียบัตรทองคำ!
+            </button>
+        </section>
+
+        <section id="screenStageHub" class="w-full hidden flex flex-col items-center gap-5">
+            <div class="w-full flex items-center justify-between bg-white/70 p-3 rounded-2xl shadow-sm border border-white">
+                <button onclick="backToMap()" class="px-3 py-1.5 bg-slate-500 text-white font-bold text-xs sm:text-sm rounded-xl btn-3d"><i class="fa-solid fa-arrow-left mr-1"></i>แผนที่</button>
+                <h3 id="stageHubTitle" class="font-black text-base sm:text-xl text-indigo-900">โลกแห่งอักษร</h3>
+                <div class="w-10"></div>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full px-2">
+                <button onclick="launchMiniGame(1)" id="btnMiniGame1" class="glass-panel p-5 rounded-2xl border-2 border-indigo-300 flex flex-col items-center text-center gap-3 btn-3d">
+                    <span class="text-4xl">🧩</span>
+                    <h4 class="font-bold text-sm text-indigo-900">1. จับคู่ภาพปริศนา</h4>
+                    <span id="mgStatus1" class="text-xs font-bold text-slate-500"><i class="fa-regular fa-circle-dot mr-1"></i>พร้อมเล่น</span>
+                </button>
+                <button onclick="launchMiniGame(2)" id="btnMiniGame2" class="glass-panel p-5 rounded-2xl flex flex-col items-center text-center gap-3 btn-3d opacity-60">
+                    <span class="text-4xl">🎧</span>
+                    <h4 class="font-bold text-sm text-indigo-900">2. แตะหาตัวอักษร</h4>
+                    <span id="mgStatus2" class="text-xs font-bold text-slate-500"><i class="fa-solid fa-lock mr-1"></i>ล็อก</span>
+                </button>
+                <button onclick="launchMiniGame(3)" id="btnMiniGame3" class="glass-panel p-5 rounded-2xl flex flex-col items-center text-center gap-3 btn-3d opacity-60">
+                    <span class="text-4xl">🃏</span>
+                    <h4 class="font-bold text-sm text-indigo-900">3. จับคู่ความจำ</h4>
+                    <span id="mgStatus3" class="text-xs font-bold text-slate-500"><i class="fa-solid fa-lock mr-1"></i>ล็อก</span>
+                </button>
+                <button onclick="launchMiniGame(4)" id="btnMiniGame4" class="glass-panel p-5 rounded-2xl flex flex-col items-center text-center gap-3 btn-3d opacity-60">
+                    <span class="text-4xl">🐉</span>
+                    <h4 class="font-bold text-sm text-rose-700">4. ปราบบอสประจำโลก</h4>
+                    <span id="mgStatus4" class="text-xs font-bold text-slate-500"><i class="fa-solid fa-lock mr-1"></i>ล็อก</span>
+                </button>
+            </div>
+            <div id="petDialogueBox" class="w-full max-w-lg bg-white/90 border-2 border-indigo-400 rounded-2xl p-4 flex items-center gap-4 shadow-md relative mt-4">
+                <span id="petSpeechIcon" class="text-4xl sm:text-5xl filter drop-shadow">🦕</span>
+                <div class="text-left">
+                    <h5 id="petSpeechName" class="font-bold text-xs text-indigo-600">คู่หู ไดโน่</h5>
+                    <p id="petSpeechBubble" class="text-sm font-semibold text-slate-700 mt-0.5">ยินดีต้อนรับเจ้านาย! มาพยายามผ่านด่านแรกไปพร้อมกันเลยครับ!</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="screenPlayground" class="w-full hidden flex flex-col items-center gap-4 bg-white/60 p-4 rounded-3xl shadow-xl border border-white/80 min-h-[440px]">
+            <div class="w-full flex items-center justify-between border-b pb-2 mb-2">
+                <button onclick="quitPlayground()" class="px-2.5 py-1 bg-rose-500 text-white font-bold text-xs rounded-xl btn-3d"><i class="fa-solid fa-circle-xmark mr-1"></i>ออก</button>
+                <h4 id="playgroundTitle" class="font-bold text-sm sm:text-base text-slate-700">เล่นเกม</h4>
+                <div class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full shadow-sm">
+                    คะแนนด่าน: <span id="playgroundScore" class="text-sm">0</span>
+                </div>
+            </div>
+
+            <div id="playgroundBody" class="w-full flex-1 flex flex-col justify-center items-center">
+                </div>
+        </section>
+    </main>
+
+    <div id="toastSpeech" class="fixed bottom-4 left-4 max-w-sm bg-slate-900/90 backdrop-blur text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-32 opacity-0 transition-all duration-300 z-50 pointer-events-none">
+        <span id="toastAvatar" class="text-2xl">🦕</span>
+        <p id="toastText" class="text-xs sm:text-sm font-medium"></p>
+    </div>
+
+    <div id="modalTeacherAdmin" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden z-50 p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div class="bg-indigo-600 text-white px-5 py-4 flex items-center justify-between">
+                <h3 class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-user-shield"></i> ระบบจัดการสำหรับคุณครู (Teacher Dashboard)</h3>
+                <button onclick="closeTeacherAdmin()" class="text-white/80 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="adminAuthBlock" class="p-8 flex flex-col items-center gap-4">
+                <i class="fa-solid fa-lock text-4xl text-indigo-200 animate-bounce"></i>
+                <div class="w-full max-w-xs text-center space-y-2">
+                    <p class="text-sm font-bold text-slate-600">กรุณาใส่รหัสผ่านเพื่อเข้าใช้งานของคุณครู</p>
+                    <input id="adminPassword" type="password" placeholder="รหัสผ่านเริ่มต้นคือ 1234" class="w-full text-center p-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-bold tracking-widest text-lg">
+                    <button onclick="verifyAdminPass()" class="w-full py-2.5 bg-indigo-600 text-white font-bold rounded-xl btn-3d shadow-md">ยืนยันรหัสผ่าน</button>
+                </div>
+            </div>
+            <div id="adminContentBlock" class="hidden flex-1 flex flex-col overflow-hidden">
+                <div class="bg-slate-100 border-b flex font-bold text-sm">
+                    <button id="tabBtnDash" onclick="switchAdminTab('dash')" class="flex-1 py-3 text-center bg-white text-indigo-600 border-b-2 border-indigo-600">📊 สถิติชั้นเรียน</button>
+                    <button id="tabBtnWords" onclick="switchAdminTab('words')" class="flex-1 py-3 text-center text-slate-600 hover:bg-slate-50">✏️ จัดการคลังคำศัพท์</button>
+                </div>
+                <div class="p-4 overflow-y-auto flex-1 space-y-4 text-left">
+                    <div id="tabPanelDash" class="space-y-4">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <div class="bg-indigo-50 border border-indigo-100 p-3 rounded-xl">
+                                <span class="text-xs text-indigo-500 font-bold block">นักเรียนลงทะเบียน</span>
+                                <span id="statTotalStudents" class="text-2xl font-black text-indigo-900">0</span> <span class="text-xs font-bold text-indigo-700">คน</span>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-xl">
+                                <span class="text-xs text-emerald-500 font-bold block">ท็อปสกอร์ห้องเรียน</span>
+                                <span id="statTopScore" class="text-2xl font-black text-emerald-900">0</span> <span class="text-xs font-bold text-emerald-700">เหรียญ</span>
+                            </div>
+                            <div class="bg-amber-50 border border-amber-100 p-3 rounded-xl col-span-2 sm:col-span-1">
+                                <span class="text-xs text-amber-500 font-bold block">จำนวนรอบสะสม</span>
+                                <span id="statTotalPlays" class="text-2xl font-black text-amber-900">0</span> <span class="text-xs font-bold text-amber-700">รอบ</span>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                            <h4 class="text-xs font-bold text-slate-700 mb-2"><i class="fa-solid fa-chart-bar mr-1"></i> แผนภูมิเปรียบเทียบคะแนนรวมของนักเรียนในชั้นเรียน</h4>
+                            <div class="w-full max-h-[220px] relative">
+                                <canvas id="classroomChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <button onclick="clearClassroomData()" class="px-4 py-2 bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold text-xs rounded-xl transition-all">
+                                <i class="fa-solid fa-trash-can mr-1"></i> ล้างข้อมูลและรีเซ็ตคะแนนนักเรียนทั้งหมด
+                            </button>
+                        </div>
+                    </div>
+                    <div id="tabPanelWords" class="space-y-4 hidden">
+                        <p class="text-xs font-bold text-slate-500"><i class="fa-solid fa-circle-info mr-1"></i> คุณครูสามารถปรับเปลี่ยนอีโมจิรูปภาพและคำศัพท์สำหรับตัวอักษร A-Z เพื่อประยุกต์บทเรียนได้ทันที</p>
+                        <div id="wordsEditorList" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[350px] overflow-y-auto pr-1">
+                            </div>
+                        <div class="flex justify-end pt-2 border-t">
+                            <button onclick="saveCustomWords()" class="px-5 py-2 bg-emerald-600 text-white font-bold text-sm rounded-xl shadow btn-3d">
+                                <i class="fa-solid fa-floppy-disk mr-1"></i> บันทึกข้อมูลคลังคำศัพท์ใหม่
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalCertificate" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md flex items-center justify-center hidden z-50 p-4 overflow-y-auto">
+        <div class="w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-1 no-print">
+            <div class="p-3 flex justify-between bg-slate-50 rounded-t-2xl border-b">
+                <h4 class="font-bold text-sm text-slate-600"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> ยินดีด้วย คุณทำภารกิจสำเร็จแล้ว!</h4>
+                <div class="flex gap-2">
+                    <button onclick="window.print()" class="px-3 py-1 bg-indigo-600 text-white font-bold text-xs rounded-xl shadow btn-3d"><i class="fa-solid fa-print mr-1"></i> พิมพ์เกียรติบัตร</button>
+                    <button onclick="closeCertModal()" class="px-3 py-1 bg-slate-400 text-white font-bold text-xs rounded-xl btn-3d">ปิด</button>
+                </div>
+            </div>
+            
+            <div id="certPrintArea" class="bg-gradient-to-br from-amber-50 via-white to-orange-50 border-[12px] border-double border-amber-400 p-6 sm:p-10 text-center relative m-2 rounded-xl">
+                <div class="absolute top-2 left-2 text-2xl text-amber-400/40">★</div>
+                <div class="absolute top-2 right-2 text-2xl text-amber-400/40">★</div>
+                <div class="absolute bottom-2 left-2 text-2xl text-amber-400/40">★</div>
+                <div class="absolute bottom-2 right-2 text-2xl text-amber-400/40">★</div>
+
+                <div class="text-4xl sm:text-5xl mb-2">🏆</div>
+                <h1 class="text-2xl sm:text-3xl font-black tracking-wide text-amber-800 uppercase">Certificate of Achievement</h1>
+                <h2 class="text-lg sm:text-xl font-bold text-indigo-900 mt-1">ใบประกาศเกียรติคุณผู้กล้าภาษาอังกฤษ</h2>
+                
+                <p class="text-xs sm:text-sm text-slate-500 italic mt-4">ใบประกาศฉบับนี้ให้ไว้เพื่อแสดงว่า</p>
+                <div class="my-3 border-b-2 border-dashed border-slate-300 w-3/4 mx-auto pb-1">
+                    <h3 id="certName" class="text-xl sm:text-2xl font-black text-slate-800">สมชาย ใจดี</h3>
+                </div>
+                <p class="text-xs sm:text-sm font-semibold text-slate-700">
+                    นักเรียนชั้น <span id="certClass" class="text-indigo-600 font-bold">ป.1/1</span> เลขที่ <span id="certNo" class="text-indigo-600 font-bold">1</span>
+                </p>
+
+                <p class="text-xs sm:text-sm text-slate-600 max-w-md mx-auto mt-4 leading-relaxed">
+                    ได้ผ่านการเดินทางผจญภัยในมิติ <span class="font-bold text-amber-700">A–Z Adventure World</span> สะสมดวงดาวความรู้แห่งโลกภาษาอังกฤษครบถ้วนสมบูรณ์ มีทักษะและความเพียรพยายามเป็นที่ประจักษ์ คุ้มค่าแก่การยกย่องสรรเสริญ
+                </p>
+
+                <div class="mt-6 flex items-center justify-around">
+                    <div class="text-center">
+                        <span class="text-xs text-slate-400 block">คะแนนสะสมสูงสุด</span>
+                        <span id="certCoins" class="font-bold text-sm text-amber-600">500 เหรียญทอง</span>
+                    </div>
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 bg-amber-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center text-white text-2xl sm:text-3xl font-black transform rotate-12 relative animate-pulse-glow">
+                        🏅
+                        <span class="absolute -inset-1 border border-amber-600 border-dashed rounded-full"></span>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-xs text-slate-400 block">วันที่สำเร็จการศึกษา</span>
+                        <span id="certDate" class="font-bold text-sm text-slate-700">01/01/2026</span>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-4 border-t border-slate-200/60 text-[11px] text-slate-400 font-medium">
+                    ลงนามโดย สภาผู้พิทักษ์อักษรศาสตราแห่ง A–Z Adventure World
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="w-full text-center py-1.5 text-[10px] sm:text-xs text-slate-400/80 font-medium z-40">
+        &copy; 2026 A–Z Adventure World • ขับเคลื่อนด้วย Web Audio & Speech API ไร้รอยต่อ
+    </footer>
+
+    <script>
+        // 1. DEFAULT DATA DICTIONARY CONFIGURATION
+        const defaultAlphabetVocabulary = {
+            'A': { word: 'Apple', icon: '🍎' }, 'B': { word: 'Banana', icon: '🍌' }, 'C': { word: 'Cat', icon: '🐱' },
+            'D': { word: 'Dog', icon: '🐶' }, 'E': { word: 'Elephant', icon: '🐘' }, 'F': { word: 'Frog', icon: '🐸' },
+            'G': { word: 'Grape', icon: '🍇' }, 'H': { word: 'House', icon: '🏠' }, 'I': { word: 'Ice cream', icon: '🍦' },
+            'J': { word: 'Jellyfish', icon: '🪼' }, 'K': { word: 'Kangaroo', icon: '🦘' }, 'L': { word: 'Lion', icon: '🦁' },
+            'M': { word: 'Monkey', icon: '🐵' }, 'N': { word: 'Nest', icon: '🪹' }, 'O': { word: 'Owl', icon: '🦉' },
+            'P': { word: 'Pencil', icon: '✏️' }, 'Q': { word: 'Queen', icon: '👸' }, 'R': { word: 'Rabbit', icon: '🐰' },
+            'S': { word: 'Sun', icon: '☀️' }, 'T': { word: 'Tiger', icon: '🐯' }, 'U': { word: 'Umbrella', icon: '☂️' },
+            'V': { word: 'Van', icon: '🚐' }, 'W': { word: 'Whale', icon: '🐋' }, 'X': { word: 'Xylophone', icon: '🪘' },
+            'Y': { word: 'Yo-yo', icon: '🪀' }, 'Z': { word: 'Zebra', icon: '🦓' }
+        };
+
+        const worldConfigurations = [
+            { id: 1, name: 'Forest ABC', range: ['A','B','C','D','E'], reqStars: 0, bg: 'from-emerald-400 to-green-600', icon: '🌳' },
+            { id: 2, name: 'Ocean Letters', range: ['F','G','H','I','J'], reqStars: 3, bg: 'from-cyan-400 to-blue-600', icon: '🌊' },
+            { id: 3, name: 'Space Alphabet', range: ['K','L','M','N','O'], reqStars: 6, bg: 'from-indigo-600 to-purple-900', icon: '🚀' },
+            { id: 4, name: 'Magic Castle', range: ['P','Q','R','S','T'], reqStars: 9, bg: 'from-fuchsia-500 to-pink-700', icon: '🏰' },
+            { id: 5, name: 'Dragon Mountain', range: ['U','V','W','X','Y','Z'], reqStars: 12, bg: 'from-amber-600 to-rose-700', icon: '🐉' }
+        ];
+
+        // 2. STATE MANAGER VARIABLES
+        let activePlayer = { name: '', class: '', no: '', avatar: '👦', pet: '🦕 ไดโน่', stars: 0, coins: 0, dailyClaimed: 0 };
+        let vocabularyData = {};
+        let classroomRegistry = [];
+        let currentWorld = null;
+        let activeSubGameId = 1;
+        let playgroundEngineState = {};
+        let classroomChartInstance = null;
+
+        // Initialize App Setup on window load
+        window.onload = function() {
+            loadDatabaseFromStorage();
+            renderWorldAdventureMap();
+        };
+
+        function loadDatabaseFromStorage() {
+            // Load vocabulary
+            const storedWords = localStorage.getItem('az_vocab');
+            if(storedWords) {
+                vocabularyData = JSON.parse(storedWords);
+            } else {
+                vocabularyData = JSON.parse(JSON.stringify(defaultAlphabetVocabulary));
+                localStorage.setItem('az_vocab', JSON.stringify(vocabularyData));
+            }
+            // Load classroom history
+            const storedClass = localStorage.getItem('az_classroom');
+            if(storedClass) classroomRegistry = JSON.parse(storedClass);
+        }
+
+        // 3. NATIVE PROCEDURAL SYNTHETIC AUDIO CONTROLLERS
+        function playSynthesizedBeep(type) {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'click') {
+                    osc.frequency.setValueAtTime(400, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+                    osc.start(); osc.stop(ctx.currentTime + 0.1);
+                } else if (type === 'correct') {
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2); // G5
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+                    osc.start(); osc.stop(ctx.currentTime + 0.4);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, ctx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(100, ctx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                    osc.start(); osc.stop(ctx.currentTime + 0.3);
+                }
+            } catch (e) { console.log("Web Audio API not interacting until user action."); }
+        }
+
+        function speakPhonicsText(textToSpeak) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.85;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // 4. UI ELEMENTAL INTERACTION EFFECTS
+        function triggerHapticShakeUI() {
+            const container = document.getElementById('gameMainContainer');
+            container.classList.add('shake');
+            playSynthesizedBeep('wrong');
+            setTimeout(() => container.classList.remove('shake'), 400);
+        }
+
+        function triggerConfettiCanvasRain(durationMs = 3000) {
+            const canvas = document.getElementById('confettiCanvas');
+            canvas.classList.remove('hidden');
+            const ctx = canvas.getContext('2d');
+            let animationFrameId;
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const particleCount = 100;
+            const particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    size: Math.random() * 8 + 4,
+                    color: `hsl(${Math.random() * 360}, 100%, 60%)`,
+                    speed: Math.random() * 4 + 2,
+                    angle: Math.random() * 2
+                });
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    p.y += p.speed;
+                    p.x += Math.sin(p.angle);
+                    if (p.y > canvas.height) p.y = -10;
+                });
+                animationFrameId = requestAnimationFrame(draw);
+            }
+            draw();
+
+            setTimeout(() => {
+                cancelAnimationFrame(animationFrameId);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                canvas.classList.add('hidden');
+            }, durationMs);
+        }
+
+        function triggerPetSpeechNotification(text) {
+            const toast = document.getElementById('toastSpeech');
+            document.getElementById('toastAvatar').innerText = activePlayer.pet.split(' ')[0];
+            document.getElementById('toastText').innerText = text;
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-32', 'opacity-0');
+            }, 3000);
+        }
+
+        // 5. REGISTRATION SCREEN INTERACTION LOGIC
+        function selectAvatar(emoji, element) {
+            playSynthesizedBeep('click');
+            document.querySelectorAll('.avatar-opt').forEach(el => el.classList.replace('bg-indigo-50', 'bg-white/60'), el => el.style.borderColor = 'transparent');
+            document.querySelectorAll('.avatar-opt').forEach(el => el.style.borderColor = 'transparent');
+            element.classList.replace('bg-white/60', 'bg-indigo-50');
+            element.style.borderColor = '#4F46E5';
+            activePlayer.avatar = emoji;
+        }
+
+        function selectPet(petStr, element) {
+            playSynthesizedBeep('click');
+            document.querySelectorAll('.pet-opt').forEach(el => el.classList.replace('bg-indigo-50', 'bg-white/60'));
+            document.querySelectorAll('.pet-opt').forEach(el => el.style.borderColor = 'transparent');
+            element.classList.replace('bg-white/60', 'bg-indigo-50');
+            element.style.borderColor = '#4F46E5';
+            activePlayer.pet = petStr;
+        }
+
+        function startGameSession() {
+            const name = document.getElementById('inputName').value.trim();
+            const pClass = document.getElementById('inputClass').value.trim();
+            const pNo = document.getElementById('inputNo').value.trim();
+
+            if(!name || !pClass || !pNo) {
+                alert('👦 กรุณากรอกข้อมูล ชื่อ ชั้น และเลขที่ให้ครบถ้วนก่อนเข้าเล่นนะคร้าบ!');
+                return;
+            }
+
+            activePlayer.name = name;
+            activePlayer.class = pClass;
+            activePlayer.no = pNo;
+            activePlayer.stars = 0;
+            activePlayer.coins = 0;
+
+            // Search matching profile in database or establish record
+            const match = classroomRegistry.find(s => s.name === name && s.class === pClass);
+            if(match) {
+                activePlayer.stars = match.stars || 0;
+                activePlayer.coins = match.coins || 0;
+            }
+
+            updateTopMenuBarUI();
+            playSynthesizedBeep('correct');
+
+            document.getElementById('screenLogin').classList.add('hidden');
+            document.getElementById('screenMap').classList.remove('hidden');
+            renderWorldAdventureMap();
+            triggerPetSpeechNotification(`สวัสดีเจ้านาย ${activePlayer.name}! ยินดีต้อนรับเข้าสู่โลกภาษาอังกฤษครับ!`);
+        }
+
+        function updateTopMenuBarUI() {
+            document.getElementById('headerAvatar').innerText = activePlayer.avatar;
+            document.getElementById('headerPlayerName').innerText = activePlayer.name;
+            document.getElementById('headerPlayerClass').innerText = `ชั้น ${activePlayer.class} เลขที่ ${activePlayer.no}`;
+            document.getElementById('playerStars').innerText = activePlayer.stars;
+            document.getElementById('playerCoins').innerText = activePlayer.coins;
+        }
+
+        // 6. ADVENTURE MAP RENDERING & PROGRESSION
+        function renderWorldAdventureMap() {
+            const container = document.getElementById('worldsContainer');
+            container.innerHTML = '';
+
+            worldConfigurations.forEach(w => {
+                const isLocked = activePlayer.stars < w.reqStars;
+                let actionHTML = '';
+
+                if (isLocked) {
+                    actionHTML = `
+                        <div class="mt-4 bg-black/20 text-white rounded-xl py-2 px-3 text-xs font-bold flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-lock"></i> ต้องการดาว ⭐ ${w.reqStars} ดวง
+                        </div>`;
+                } else {
+                    actionHTML = `
+                        <button onclick="enterWorld(${w.id})" class="mt-4 w-full py-2 bg-white text-slate-800 font-extrabold text-xs sm:text-sm rounded-xl border-b-2 border-slate-300 shadow hover:bg-slate-50 transition-all btn-3d">
+                            <i class="fa-solid fa-compass animate-spin-slow mr-1 text-indigo-500"></i> เข้าสู่โลกนี้
+                        </button>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = `p-5 rounded-3xl bg-gradient-to-br ${w.bg} text-white shadow-xl flex flex-col justify-between relative overflow-hidden ${isLocked ? 'opacity-70 filter grayscale-[40%]' : 'animate-float'}`;
+                card.innerHTML = `
+                    <div class="absolute -right-6 -bottom-6 text-7xl opacity-10 font-black">${w.icon}</div>
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-3xl">${w.icon}</span>
+                            <span class="text-[10px] uppercase font-black bg-white/20 px-2 py-0.5 rounded-full">World ${w.id}</span>
+                        </div>
+                        <h3 class="text-xl font-black mt-2 tracking-tight">${w.name}</h3>
+                        <p class="text-xs text-white/80 font-medium mt-1">อักษรช่วง: ${w.range[0]} – ${w.range[w.range.length-1]}</p>
+                    </div>
+                    ${actionHTML}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function enterWorld(worldId) {
+            playSynthesizedBeep('click');
+            currentWorld = worldConfigurations.find(w => w.id === worldId);
+            document.getElementById('stageHubTitle').innerText = `${currentWorld.icon} ${currentWorld.name}`;
+            
+            // Sync status variables
+            activeSubGameId = 1;
+            refreshSubGameHubButtonsUI();
+
+            document.getElementById('screenMap').classList.add('hidden');
+            document.getElementById('screenStageHub').classList.remove('hidden');
+
+            const petName = activePlayer.pet.split(' ')[1];
+            document.getElementById('petSpeechName').innerText = `คู่หู ${petName}`;
+            document.getElementById('petSpeechIcon').innerText = activePlayer.pet.split(' ')[0];
+            document.getElementById('petSpeechBubble').innerText = `เราอยู่ที่ ${currentWorld.name} แล้ว! มาพิชิตมินิเกมที่ 1 จับคู่ภาพปริศนากันเลยครับเจ้านาย!`;
+        }
+
+        function backToMap() {
+            playSynthesizedBeep('click');
+            document.getElementById('screenStageHub').classList.add('hidden');
+            document.getElementById('screenMap').classList.remove('hidden');
+            renderWorldAdventureMap();
+        }
+
+        function refreshSubGameHubButtonsUI() {
+            for (let i = 1; i <= 4; i++) {
+                const btn = document.getElementById(`btnMiniGame${i}`);
+                const statusSpan = document.getElementById(`mgStatus${i}`);
+                
+                if (i === activeSubGameId) {
+                    btn.className = "glass-panel p-5 rounded-2xl border-4 border-indigo-500 bg-white shadow-xl flex flex-col items-center text-center gap-3 btn-3d opacity-100 scale-105 z-10";
+                    statusSpan.innerHTML = `<span class="text-indigo-600 font-bold"><i class="fa-solid fa-star-half-stroke animate-pulse mr-1"></i>กำลังท้าทาย</span>`;
+                } else if (i < activeSubGameId) {
+                    btn.className = "glass-panel p-5 rounded-2xl border-2 border-emerald-400 bg-emerald-50/50 flex flex-col items-center text-center gap-3 btn-3d opacity-90";
+                    statusSpan.innerHTML = `<span class="text-emerald-600 font-bold"><i class="fa-solid fa-circle-check mr-1"></i>ผ่านแล้ว</span>`;
+                } else {
+                    btn.className = "glass-panel p-5 rounded-2xl border-transparent bg-slate-200/50 flex flex-col items-center text-center gap-3 opacity-50 cursor-not-allowed";
+                    statusSpan.innerHTML = `<span class="text-slate-400 font-medium"><i class="fa-solid fa-lock mr-1"></i>ล็อกอยู่</span>`;
+                }
+            }
+        }
+
+        // 7. REAL-TIME SYNCHRONIZED DAILY REWARD
+        function claimDailyReward() {
+            playSynthesizedBeep('click');
+            const now = Date.now();
+            const cooldwn = 24 * 60 * 60 * 1000; // 24 Hours in ms
+            const lastClaim = activePlayer.dailyClaimed || 0;
+
+            if (now - lastClaim < cooldwn) {
+                const timeLeft = cooldwn - (now - lastClaim);
+                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const mins = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                alert(`🎁 กล่องสุ่มเปิดไปแล้วนะจ๊ะ! กรุณารออีกประมาณ ${hours} ชั่วโมง ${mins} นาที เพื่อกลับมาลุ้นใหม่น้า`);
+                return;
+            }
+
+            const luckyCoins = Math.floor(Math.random() * 50) + 20; // 20-70 coins random
+            activePlayer.coins += luckyCoins;
+            activePlayer.dailyClaimed = now;
+            saveCurrentProgressToRegistry();
+            updateTopMenuBarUI();
+            
+            triggerConfettiCanvasRain(2000);
+            playSynthesizedBeep('correct');
+            document.getElementById('dailyRewardStatus').innerText = `คุณได้รับโบนัสล่าสุด +${luckyCoins} เหรียญแล้ว!`;
+            alert(`🎉 ยินดีด้วย! คุณเปิดได้เหรียญนำโชคฟรีจำนวน +${luckyCoins} เหรียญทอง!`);
+        }
+
+        // 8. MINI-GAME ENGINE LOGIC FACTORY
+        function launchMiniGame(gameId) {
+            if (gameId !== activeSubGameId) {
+                if (gameId < activeSubGameId) {
+                    // Allowed to replay
+                } else {
+                    triggerHapticShakeUI();
+                    triggerPetSpeechNotification("ใจเย็นๆ นะครับเจ้านาย ต้องผ่านด่านก่อนหน้าก่อนนะ!");
+                    return;
+                }
+            }
+            
+            playSynthesizedBeep('click');
+            document.getElementById('screenStageHub').classList.add('hidden');
+            document.getElementById('screenPlayground').classList.remove('hidden');
+            
+            playgroundEngineState = { gameId: gameId, score: 0, attempts: 0 };
+            document.getElementById('playgroundScore').innerText = "0";
+
+            if (gameId === 1) buildMatchGameLayout();
+            else if (gameId === 2) buildListeningQuizLayout();
+            else if (gameId === 3) buildMemoryFlipCardLayout();
+            else if (gameId === 4) buildBossBattleLayout();
+        }
+
+        function quitPlayground() {
+            playSynthesizedBeep('click');
+            document.getElementById('screenPlayground').classList.add('hidden');
+            document.getElementById('screenStageHub').classList.remove('hidden');
+            refreshSubGameHubButtonsUI();
+        }
+
+        function awardPlaygroundWin() {
+            triggerConfettiCanvasRain(3000);
+            playSynthesizedBeep('correct');
+
+            activePlayer.coins += 20; // Win bonus
+            
+            // Progression advancement logic
+            if (playgroundEngineState.gameId === activeSubGameId) {
+                activeSubGameId++;
+            }
+
+            let message = "เก่งมากครับเจ้านาย! พิชิตด่านนี้เสร็จสมบูรณ์แล้ว!";
+            if (activeSubGameId > 4) {
+                // Fully cleared world
+                activePlayer.stars += 3; // Award 3 Stars
+                message = `🎉 ไชโย! เจ้านายเคลียร์โลก ${currentWorld.name} ได้รับดาว ⭐ 3 ดวง และเหรียญทองเพิ่มขึ้น!`;
+                saveCurrentProgressToRegistry();
+                updateTopMenuBarUI();
+                setTimeout(() => {
+                    alert(message);
+                    quitPlayground();
+                    backToMap();
+                }, 1500);
+                return;
+            }
+
+            saveCurrentProgressToRegistry();
+            updateTopMenuBarUI();
+
+            setTimeout(() => {
+                alert("🎉 สุดยอดเลย! คุณผ่านด่านนี้สำเร็จแล้ว!");
+                quitPlayground();
+            }, 1200);
+        }
+
+        // --- SUB GAME 1: MATCHING GAME (IMAGE TO LETTER) ---
+        function buildMatchGameLayout() {
+            document.getElementById('playgroundTitle').innerText = "มินิเกมที่ 1 : จับคู่ภาพปริศนา 🧩";
+            const body = document.getElementById('playgroundBody');
+            body.innerHTML = `
+                <p class="text-xs font-bold text-slate-500 mb-4 text-center">แตะที่ภาพคำศัพท์ฝั่งซ้าย แล้วแตะตัวอักษรที่สัมพันธ์กันฝั่งขวาให้ถูกต้องให้ครบทุกคู่!</p>
+                <div class="grid grid-cols-2 gap-6 w-full max-w-md">
+                    <div id="mgLeftCol" class="space-y-3 flex flex-col items-stretch"></div>
+                    <div id="mgRightCol" class="space-y-3 flex flex-col items-stretch"></div>
+                </div>
+            `;
+
+            let letters = [...currentWorld.range];
+            let leftItems = letters.map(l => ({ letter: l, data: vocabularyData[l] }));
+            let rightItems = [...letters];
+
+            // Shuffle array options
+            leftItems.sort(() => Math.random() - 0.5);
+            rightItems.sort(() => Math.random() - 0.5);
+
+            let selectedLeft = null;
+            let matchedCount = 0;
+
+            const lCol = document.getElementById('mgLeftCol');
+            const rCol = document.getElementById('mgRightCol');
+
+            leftItems.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = "p-4 bg-white border-2 border-slate-200 rounded-2xl font-bold text-2xl flex items-center justify-center gap-2 shadow btn-3d";
+                btn.innerHTML = `${item.data.icon} <span class="text-xs text-slate-500 block font-normal">${item.data.word}</span>`;
+                btn.onclick = () => {
+                    playSynthesizedBeep('click');
+                    document.querySelectorAll('#mgLeftCol button').forEach(b => b.classList.remove('border-indigo-500', 'bg-indigo-50'));
+                    btn.classList.add('border-indigo-500', 'bg-indigo-50');
+                    selectedLeft = item.letter;
+                    speakPhonicsText(item.data.word);
+                };
+                lCol.appendChild(btn);
+            });
+
+            rightItems.forEach(letter => {
+                const btn = document.createElement('button');
+                btn.className = "p-4 bg-white border-2 border-slate-200 rounded-2xl font-black text-2xl text-slate-700 shadow btn-3d";
+                btn.innerText = letter;
+                btn.onclick = () => {
+                    if (!selectedLeft) {
+                        triggerPetSpeechNotification("กรุณาเลือกภาพไอคอนคำศัพท์ฝั่งซ้ายก่อนนะจ๊ะ");
+                        return;
+                    }
+                    playSynthesizedBeep('click');
+                    if (selectedLeft === letter) {
+                        // Correct combination Match
+                        playSynthesizedBeep('correct');
+                        btn.disabled = true;
+                        btn.className = "p-4 bg-emerald-500 text-white border-transparent rounded-2xl font-black text-2xl shadow opacity-50";
+                        
+                        // Disable corresponding left
+                        document.querySelectorAll('#mgLeftCol button').forEach(b => {
+                            if(b.innerText.includes(vocabularyData[letter].word)) {
+                                b.disabled = true;
+                                b.className = "p-4 bg-emerald-500 text-white border-transparent rounded-2xl font-bold text-2xl flex items-center justify-center gap-2 shadow opacity-50";
+                            }
+                        });
+
+                        matchedCount++;
+                        playgroundEngineState.score += 25;
+                        document.getElementById('playgroundScore').innerText = playgroundEngineState.score;
+                        selectedLeft = null;
+
+                        if (matchedCount === letters.length) {
+                            awardPlaygroundWin();
+                        }
+                    } else {
+                        triggerHapticShakeUI();
+                        triggerPetSpeechNotification("อุ๊ย! สัญลักษณ์ยังไม่สัมพันธ์กัน ลองใหม่อีกทีนะคร้าบ");
+                    }
+                };
+                rCol.appendChild(btn);
+            });
+        }
+
+        // --- SUB GAME 2: LISTENING QUIZ ---
+        function buildListeningQuizLayout() {
+            document.getElementById('playgroundTitle').innerText = "มินิเกมที่ 2 : แตะหาตัวอักษรให้ตรงเสียง 🎧";
+            
+            const pool = [...currentWorld.range];
+            const targetLetter = pool[Math.floor(Math.random() * pool.length)];
+            
+            const body = document.getElementById('playgroundBody');
+            body.innerHTML = `
+                <div class="text-center w-full max-w-sm space-y-6">
+                    <p class="text-xs font-bold text-slate-500">ฟังเสียงพูดของระบบ แล้วกดเลือกตัวอักษรภาษาอังกฤษที่ถูกต้องตรงกัน!</p>
+                    <button onclick="speakListeningTarget()" class="w-24 h-24 bg-gradient-to-tr from-indigo-500 to-purple-600 rounded-full text-white text-3xl shadow-lg btn-3d mx-auto flex items-center justify-center animate-pulse-glow">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </button>
+                    <p class="text-xs font-bold text-indigo-500 cursor-pointer underline" onclick="speakListeningTarget()">กดตรงนี้เพื่อฟังซ้ำ</p>
+                    <div id="quizAnswersGrid" class="grid grid-cols-2 gap-4 pt-4"></div>
+                </div>
+            `;
+
+            playgroundEngineState.target = targetLetter;
+            speakListeningTarget();
+
+            // Populate options (Ensure mix of correct and incorrect items from world range)
+            let options = [targetLetter];
+            let candidates = pool.filter(l => l !== targetLetter);
+            candidates.sort(() => Math.random() - 0.5);
+            
+            while(options.length < Math.min(4, pool.length)) {
+                options.push(candidates.pop());
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            const grid = document.getElementById('quizAnswersGrid');
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "py-4 bg-white border-2 border-slate-200 rounded-2xl font-black text-3xl text-slate-700 shadow btn-3d";
+                btn.innerText = opt;
+                btn.onclick = () => {
+                    if (opt === playgroundEngineState.target) {
+                        playgroundEngineState.score = 100;
+                        document.getElementById('playgroundScore').innerText = "100";
+                        awardPlaygroundWin();
+                    } else {
+                        triggerHapticShakeUI();
+                        triggerPetSpeechNotification("เสียงยังไม่ตรงกับอักษรตัวนี้ ฟังดีๆ อีกครั้งนะฮะ!");
+                    }
+                };
+                grid.appendChild(btn);
+            });
+        }
+
+        function speakListeningTarget() {
+            if(playgroundEngineState.target) {
+                speakPhonicsText(`Find the alphabet starting with ${playgroundEngineState.target}. Again, ${playgroundEngineState.target}`);
+            }
+        }
+
+        // --- SUB GAME 3: MEMORY FLIP CARDS ---
+        function buildMemoryFlipCardLayout() {
+            document.getElementById('playgroundTitle').innerText = "มินิเกมที่ 3 : เกมจับคู่ความจำ 🃏";
+            const body = document.getElementById('playgroundBody');
+            body.innerHTML = `
+                <p class="text-xs font-bold text-slate-500 mb-4 text-center">หงายการ์ดเพื่อจับคู่ "ตัวอักษร" และ "รูปภาพ" ที่ถูกต้องตรงกันให้ได้!</p>
+                <div id="memoryGrid" class="grid grid-cols-3 gap-3 w-full max-w-sm"></div>
+            `;
+
+            // Pick 3 random letters from current world list to create 6 cards
+            let pool = [...currentWorld.range].sort(() => Math.random() - 0.5).slice(0, 3);
+            let deck = [];
+            
+            pool.forEach(l => {
+                deck.push({ id: `L_${l}`, matchKey: l, type: 'letter', content: l });
+                deck.push({ id: `I_${l}`, matchKey: l, type: 'icon', content: vocabularyData[l].icon });
+            });
+            deck.sort(() => Math.random() - 0.5);
+
+            let firstCard = null;
+            let secondCard = null;
+            let lockedBoard = false;
+            let pairsFound = 0;
+
+            const grid = document.getElementById('memoryGrid');
+            deck.forEach(cardData => {
+                const container = document.createElement('div');
+                container.className = "w-full aspect-square relative cursor-pointer card-inner-wrap";
+                container.style.perspective = "1000px";
+                
+                container.innerHTML = `
+                    <div class="card-inner w-full h-full absolute transform rounded-2xl shadow-md border-2 border-indigo-200">
+                        <div class="card-front w-full h-full absolute bg-gradient-to-tr from-indigo-400 to-purple-500 rounded-xl flex items-center justify-center text-white font-bold text-2xl">❓</div>
+                        <div class="card-back w-full h-full absolute bg-white rounded-xl flex items-center justify-center text-3xl font-bold text-slate-700">
+                            ${cardData.content}
+                        </div>
+                    </div>
+                `;
+
+                container.onclick = () => {
+                    if (lockedBoard) return;
+                    const inner = container.querySelector('.card-inner');
+                    if (container.classList.contains('card-flipped')) return;
+
+                    playSynthesizedBeep('click');
+                    container.classList.add('card-flipped');
+
+                    if (!firstCard) {
+                        firstCard = { data: cardData, el: container };
+                    } else {
+                        secondCard = { data: cardData, el: container };
+                        lockedBoard = true;
+
+                        if (firstCard.data.matchKey === secondCard.data.matchKey) {
+                            // Perfect Match
+                            playSynthesizedBeep('correct');
+                            pairsFound++;
+                            playgroundEngineState.score += 30;
+                            document.getElementById('playgroundScore').innerText = playgroundEngineState.score;
+                            
+                            firstCard = null; secondCard = null; lockedBoard = false;
+                            if(pairsFound === 3) awardPlaygroundWin();
+                        } else {
+                            // Incorrect Match
+                            setTimeout(() => {
+                                triggerHapticShakeUI();
+                                firstCard.el.classList.remove('card-flipped');
+                                secondCard.el.classList.remove('card-flipped');
+                                firstCard = null; secondCard = null; lockedBoard = false;
+                            }, 1000);
+                        }
+                    }
+                };
+                grid.appendChild(container);
+            });
+        }
+
+        // --- SUB GAME 4: BOSS BATTLE (HP REDUCTION) ---
+        function buildBossBattleLayout() {
+            document.getElementById('playgroundTitle').innerText = "มินิเกมที่ 4 : ด่านปราบบอสประจำโลก 🐉💥";
+            
+            const pool = [...currentWorld.range];
+            const targetLetter = pool[Math.floor(Math.random() * pool.length)];
+            const targetData = vocabularyData[targetLetter];
+
+            const body = document.getElementById('playgroundBody');
+            body.innerHTML = `
+                <div class="w-full max-w-sm text-center space-y-4">
+                    <div class="bg-rose-50 border-2 border-rose-200 rounded-2xl p-3 flex flex-col items-center relative">
+                        <span class="text-5xl animate-bounce">😈</span>
+                        <h5 class="font-bold text-xs text-rose-600 mt-1">มอนสเตอร์จอมป่วนประจำเกาะ</h5>
+                        <div class="w-full bg-slate-200 rounded-full h-4 mt-2 overflow-hidden border border-slate-300">
+                            <div id="bossHPBar" class="bg-gradient-to-r from-rose-500 to-red-600 h-full w-full transition-all duration-300"></div>
+                        </div>
+                        <span class="text-[10px] font-bold text-rose-800 mt-1">HP: <span id="bossHPText">100</span> / 100</span>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-2xl border-2 border-dashed border-indigo-400">
+                        <p class="text-xs font-bold text-slate-500 mb-1">บอสซ่อนความลับคำศัพท์ของสัญลักษณ์นี้อยู่:</p>
+                        <span class="text-5xl block my-2 filter drop-shadow-md">${targetData.icon}</span>
+                        <p class="text-sm font-black text-indigo-900">ตัวอักษรแรกสุดของภาพนี้คือตัวอะไร?</p>
+                    </div>
+
+                    <div id="bossAnswersGrid" class="grid grid-cols-3 gap-2"></div>
+                </div>
+            `;
+
+            playgroundEngineState.bossHP = 100;
+            playgroundEngineState.target = targetLetter;
+
+            // Generate alternatives
+            let alternatives = [targetLetter];
+            let candidates = pool.filter(l => l !== targetLetter);
+            candidates.sort(() => Math.random() - 0.5);
+            while(alternatives.length < Math.min(3, pool.length)) {
+                alternatives.push(candidates.pop());
+            }
+            alternatives.sort(() => Math.random() - 0.5);
+
+            const grid = document.getElementById('bossAnswersGrid');
+            alternatives.forEach(letter => {
+                const btn = document.createElement('button');
+                btn.className = "py-3 bg-white border-2 border-slate-200 rounded-2xl font-black text-xl text-slate-700 shadow btn-3d";
+                btn.innerText = letter;
+                btn.onclick = () => {
+                    playSynthesizedBeep('click');
+                    if (letter === playgroundEngineState.target) {
+                        speakPhonicsText(targetData.word);
+                        playgroundEngineState.bossHP -= 50; // Damage deal
+                        if (playgroundEngineState.bossHP < 0) playgroundEngineState.bossHP = 0;
+                        
+                        document.getElementById('bossHPBar').style.width = `${playgroundEngineState.bossHP}%`;
+                        document.getElementById('bossHPText').innerText = playgroundEngineState.bossHP;
+                        playgroundEngineState.score += 50;
+                        document.getElementById('playgroundScore').innerText = playgroundEngineState.score;
+
+                        if (playgroundEngineState.bossHP <= 0) {
+                            awardPlaygroundWin();
+                        } else {
+                            triggerConfettiCanvasRain(800);
+                            triggerPetSpeechNotification("โจมตีบอสสำเร็จ! อีกครั้งเดียวบอสจะพ่ายแพ้แล้วค๊าบ!");
+                        }
+                    } else {
+                        triggerHapticShakeUI();
+                        triggerPetSpeechNotification("คำตอบยังไม่ถูก! โดนบอสบล็อกไว้ได้ ลองเลือกใหม่ครับ!");
+                    }
+                };
+                grid.appendChild(btn);
+            });
+        }
+
+        // 9. DATA STORAGE MANAGEMENT & PROFILE SYNCHRONIZATION
+        function saveCurrentProgressToRegistry() {
+            const index = classroomRegistry.findIndex(s => s.name === activePlayer.name && s.class === activePlayer.class);
+            const dataToSave = {
+                name: activePlayer.name,
+                class: activePlayer.class,
+                no: activePlayer.no,
+                stars: activePlayer.stars,
+                coins: activePlayer.coins,
+                timestamp: new Date().toLocaleDateString('th-TH')
+            };
+
+            if (index !== -1) {
+                // Update existing record if new scores are higher
+                if (dataToSave.coins > classroomRegistry[index].coins) {
+                    classroomRegistry[index] = dataToSave;
+                }
+            } else {
+                classroomRegistry.push(dataToSave);
+            }
+            localStorage.setItem('az_classroom', JSON.stringify(classroomRegistry));
+        }
+
+        // 10. TEACHER ADMIN CONTROL PANEL CORE LOGIC
+        function openTeacherAdmin() {
+            playSynthesizedBeep('click');
+            document.getElementById('modalTeacherAdmin').classList.remove('hidden');
+            // Default reset state to authentication first
+            document.getElementById('adminAuthBlock').classList.remove('hidden');
+            document.getElementById('adminContentBlock').classList.add('hidden');
+            document.getElementById('adminPassword').value = '';
+        }
+
+        function closeTeacherAdmin() {
+            document.getElementById('modalTeacherAdmin').classList.add('hidden');
+        }
+
+        function verifyAdminPass() {
+            const pass = document.getElementById('adminPassword').value;
+            if (pass === '1234') {
+                playSynthesizedBeep('correct');
+                document.getElementById('adminAuthBlock').classList.add('hidden');
+                document.getElementById('adminContentBlock').classList.remove('hidden');
+                switchAdminTab('dash');
+            } else {
+                triggerHapticShakeUI();
+                alert('❌ รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้งครับคุณครู (รหัสเริ่มต้นคือ 1234)');
+            }
+        }
+
+        function switchAdminTab(tabName) {
+            playSynthesizedBeep('click');
+            const btnDash = document.getElementById('tabBtnDash');
+            const btnWords = document.getElementById('tabBtnWords');
+            const panelDash = document.getElementById('tabPanelDash');
+            const panelWords = document.getElementById('tabPanelWords');
+
+            if(tabName === 'dash') {
+                btnDash.className = "flex-1 py-3 text-center bg-white text-indigo-600 border-b-2 border-indigo-600";
+                btnWords.className = "flex-1 py-3 text-center text-slate-600 hover:bg-slate-50";
+                panelDash.classList.remove('hidden');
+                panelWords.classList.add('hidden');
+                loadDashboardStatisticsAndChart();
+            } else {
+                btnWords.className = "flex-1 py-3 text-center bg-white text-indigo-600 border-b-2 border-indigo-600";
+                btnDash.className = "flex-1 py-3 text-center text-slate-600 hover:bg-slate-50";
+                panelWords.classList.remove('hidden');
+                panelDash.classList.add('hidden');
+                buildWordEditorFormUI();
+            }
+        }
+
+        function loadDashboardStatisticsAndChart() {
+            const total = classroomRegistry.length;
+            let top = 0;
+            if(total > 0) {
+                top = Math.max(...classroomRegistry.map(s => s.coins || 0));
+            }
+            
+            document.getElementById('statTotalStudents').innerText = total;
+            document.getElementById('statTopScore').innerText = top;
+            document.getElementById('statTotalPlays').innerText = total * 2; // Simulated loop cycles
+
+            // Render Chart JS Bar Dynamic Graph
+            const ctx = document.getElementById('classroomChart').getContext('2d');
+            
+            if(classroomChartInstance) classroomChartInstance.destroy();
+
+            const labels = total > 0 ? classroomRegistry.map(s => `${s.name} (${s.class})`) : ['ไม่มีข้อมูล'];
+            const dataValues = total > 0 ? classroomRegistry.map(s => s.coins || 0) : [0];
+
+            classroomChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'เหรียญสะสมรวมสูงสุด',
+                        data: dataValues,
+                        backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                        borderColor: 'rgba(79, 70, 229, 1)',
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function buildWordEditorFormUI() {
+            const list = document.getElementById('wordsEditorList');
+            list.innerHTML = '';
+
+            Object.keys(vocabularyData).forEach(letter => {
+                const item = vocabularyData[letter];
+                const row = document.createElement('div');
+                row.className = "p-2 bg-slate-50 border rounded-xl flex items-center gap-2";
+                row.innerHTML = `
+                    <span class="font-black text-indigo-900 w-6">${letter}</span>
+                    <input type="text" value="${item.icon}" id="editIcon_${letter}" class="w-12 text-center p-1 bg-white border rounded font-bold">
+                    <input type="text" value="${item.word}" id="editWord_${letter}" class="flex-1 p-1 bg-white border rounded font-semibold text-sm">
+                `;
+                list.appendChild(row);
+            });
+        }
+
+        function saveCustomWords() {
+            playSynthesizedBeep('click');
+            Object.keys(vocabularyData).forEach(letter => {
+                const iconVal = document.getElementById(`editIcon_${letter}`).value.trim();
+                const wordVal = document.getElementById(`editWord_${letter}`).value.trim();
+                if(iconVal && wordVal) {
+                    vocabularyData[letter].icon = iconVal;
+                    vocabularyData[letter].word = wordVal;
+                }
+            });
+            localStorage.setItem('az_vocab', JSON.stringify(vocabularyData));
+            alert('💾 คลังคำศัพท์ภาษาอังกฤษได้รับการอัปเดตเรียบร้อยแล้วครับคุณครู!');
+        }
+
+        function clearClassroomData() {
+            if(confirm('⚠️ คุณครูแน่ใจหรือไม่ที่จะล้างฐานข้อมูลคะแนนสถิติเด็กทั้งห้องเรียน? ข้อมูลจะหายไปถาวรไม่สามารถกู้คืนได้')) {
+                classroomRegistry = [];
+                localStorage.removeItem('az_classroom');
+                loadDashboardStatisticsAndChart();
+                alert('🗑️ ล้างฐานข้อมูลสถิติห้องเรียนสำเร็จแล้ว!');
+            }
+        }
+
+        // 11. GOLDEN CERTIFICATE TRIGGER SYSTEM
+        function checkAndShowCertificate() {
+            playSynthesizedBeep('click');
+            document.getElementById('certName').innerText = activePlayer.name;
+            document.getElementById('certClass').innerText = activePlayer.class;
+            document.getElementById('certNo').innerText = activePlayer.no;
+            document.getElementById('certCoins').innerText = `${activePlayer.coins} เหรียญทอง`;
+            document.getElementById('certDate').innerText = new Date().toLocaleDateString('th-TH');
+
+            document.getElementById('modalCertificate').classList.remove('hidden');
+        }
+
+        function closeCertModal() {
+            document.getElementById('modalCertificate').classList.add('hidden');
+        }
+
+        // Watch player score hook to unlock certificate visibility
+        setInterval(() => {
+            const btn = document.getElementById('btnCertTrigger');
+            if(activePlayer.stars >= 12 && btn && btn.classList.contains('hidden')) {
+                btn.classList.remove('hidden');
+                triggerPetSpeechNotification("🎉 เจ้านายเก่งกาจมาก! ใบประกาศเกียรติคุณทองคำเปิดออกแล้ว แตะเพื่อดูได้เลยค๊าบ!");
+            }
+        }, 3000);
+    </script>
+</body>
+</html>
